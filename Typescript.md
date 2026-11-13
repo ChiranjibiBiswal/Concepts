@@ -1,5 +1,43 @@
 # TypeScript Basics
 
+## Introduction
+
+TypeScript is a statically typed superset of JavaScript, developed by Microsoft. Every valid JavaScript program is also valid TypeScript — the language does not replace JavaScript, it layers an optional type system on top of it.
+
+- **Static types** — types are checked at compile time, so mistakes such as passing a string where a number is expected are caught before the code ever runs.
+- **Compiles to JavaScript** — the compiler (`tsc`) strips the types and emits plain `.js`. Browsers and Node.js never see the annotations.
+- **No runtime cost** — because types are erased during compilation, they add nothing to the size or speed of the output.
+- **Better tooling** — editors use type information for autocomplete, inline documentation, jump-to-definition, and safe refactoring.
+
+The type system is entirely optional: you can write plain JavaScript, add a few annotations, or describe an entire API with generics and interfaces. The more precisely you describe your data, the more the compiler can help you.
+
+### Type Checking vs. Plain JavaScript
+
+```js
+// JavaScript — the mistake is only discovered at runtime
+function addJs(a, b) {
+    return a + b;
+}
+
+addJs("5", 10); // Returns "510" instead of 15
+```
+
+```ts
+// TypeScript — the same mistake is rejected before the code runs
+function addTs(a: number, b: number) {
+    return a + b;
+}
+
+// addTs("5", 10); // This will cause a TypeScript error because "5" is not a number
+```
+
+### How These Notes Are Organised
+
+- **Sections 1–6** cover the type system: annotations, arrays and tuples, unions, interfaces, generics, and utility types.
+- **Section 7** covers JavaScript features that TypeScript types in depth: classes, access modifiers, and abstract classes.
+
+Each example is self-contained and assumes the other snippets are not present, so names may be reused across sections.
+
 ## Contents
 
 1. [Foundations](#1-foundations) — functions, inference, annotation, literal types
@@ -92,7 +130,8 @@ chaiArray.push("Herbal Tea"); // valid, the array is mutable
 
 ```ts
 const readOnlyChaiArray: readonly string[] = ["Masala Chai", "Green Tea", "Black Tea"];
-readOnlyChaiArray.push("Herbal Tea"); // This will cause a TypeScript error because the array is read-only
+readOnlyChaiArray[0]; // valid, reading is allowed
+// readOnlyChaiArray.push("Herbal Tea"); // This will cause a TypeScript error because the array is read-only
 ```
 
 ### Tuples
@@ -297,6 +336,8 @@ const userProfile: UserProfile = {
 
 ### Interface Patterns
 
+Beyond plain property shapes, an interface can describe callable values, dynamic keys, and immutable members.
+
 #### Call Signatures
 
 An interface can describe a **callable** value (a function type), rather than an object's properties:
@@ -483,7 +524,7 @@ person.name;
 ### Generic Async Functions
 
 ```ts
-interface User {
+interface UserResponse {
     name: string;
     age: number;
 }
@@ -493,7 +534,7 @@ interface Posts {
     content: string;
 }
 
-const getUserData = async (path: string): Promise<User> => {
+const getUserData = async (path: string): Promise<UserResponse> => {
     const response = await fetch(`https://jsonuserdata${path}`);
     return response.json();
 }
@@ -561,16 +602,16 @@ const chaiWithoutIsHot: OmitChai = {
 ### Required
 
 ```ts
-type newChai = {
+type NewChai = {
     name?: string;
     price?: number;
 }
 
-const makeChai = (chai: Required<newChai>) => {
+const makeChai = (chai: Required<NewChai>) => {
     console.log("Making chai with the following properties:", chai);
 }
 
-// makeChai({}); // This will cause a TypeScript error because all properties are required in Required<newChai>
+// makeChai({}); // This will cause a TypeScript error because all properties are required in Required<NewChai>
 makeChai({ name: "Masala Chai", price: 5.99 }); // This is valid because all properties are provided
 ```
 
