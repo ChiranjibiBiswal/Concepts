@@ -25,7 +25,7 @@ Number.MAX_SAFE_INTEGER
 - 📏 Maximum safe size: **16 digits**
 - ❌ **17+ digit integers can lose precision**
 
-Because `JSON.parse()` converts JSON numbers to JavaScript `Number`, the trailing digits can be changed due to precision loss.
+Because `JSON.parse()` converts JSON numbers to JavaScript `Number`, the value may already be corrupted before your application logic even runs.
 
 ---
 
@@ -40,8 +40,10 @@ Exceeds MAX_SAFE_INTEGER
         ↓
 Precision loss 💥
         ↓
-Wrong transaction ID
+Wrong transaction ID / wrong lookup / broken audit trail
 ```
+
+This can silently change the value, which is dangerous for IDs used in validation, lookup, analytics, or payment flows.
 
 ---
 
@@ -49,12 +51,13 @@ Wrong transaction ID
 
 1. Check the number of digits.
 2. Compare it with `Number.MAX_SAFE_INTEGER`.
-3. If it exceeds the safe limit, don't treat it as a `Number`.
+3. If it exceeds the safe limit, do not treat it as a `Number`.
 4. Preserve it as a `String`.
+5. If you need numeric operations later, convert only when safe and explicitly required.
 
 ---
 
-### ✅ Solution
+### ✅ Safe Solution
 
 Send the transaction ID as a string:
 
@@ -64,8 +67,24 @@ Send the transaction ID as a string:
 }
 ```
 
-### 💡 Key Learning
+This keeps the exact identifier intact during JSON parsing and transmission.
+
+### 💡 When `BigInt` Helps
+
+JavaScript has `BigInt` for large integers:
+
+```js
+const txnId = 1564378960978654367n;
+```
+
+However, `BigInt` is not always ideal for API contracts because JSON serialization, database fields, and many libraries do not handle it cleanly. For API payloads and IDs, `String` is usually the safest and most portable choice.
+
+---
+
+### 💬 Key Learning
 
 > 🧠 **IDs are identifiers, not numbers.**
 >
-> If an ID can exceed **16 digits**, use a **string** to avoid precision loss.
+> If an ID can exceed **16 digits**, treat it as a **string** to avoid precision loss.
+
+This is a common real-world bug in APIs, payment systems, and transaction records: values that look numeric are not always safe to store as JavaScript numbers.
